@@ -1,1 +1,893 @@
-<div id="app"></div>
+<HTML>
+<HEAD>
+<style>
+body {
+  background-color: #cdf;
+}
+</style>
+</HEAD>
+<BODY>
+
+<div style="text-align: justify; margin-left:20%; margin-right:20%; background-color: #cdf">
+  <h2> <center> Disciplinas de Machine Learning  </center> <p> <p> <p> </h2>
+
+  Dentro de Machine Learning se distinguen las siguientes disciplinas: <p>
+  • <b>Aprendizaje no supervisado</b>: Consta de un conjunto de datos que no están previamente etiquetados. El objetivo de este aprendizaje es que el sistema aprenda las propiedades del mecanismo que genera el dataset. Entre tareas específicas se distinguen clustering, reducción de dimensionalidad, extracción de características y generación de modelos, en donde el sistema aprende al generar modelos que produzcan ejemplos artificiales similares a los disponibles en el dataset. <p>
+  • <b>Aprendizaje supervisado</b>: El objetivo es inferir un modelo de predicción a partir de un conjunto de datos de entrenamiento sobre instancias sobre las que se conocen las respuestas. Dentro de este tipo de aprendizaje se distinguen los problemas de clasificación (cuando la variable es discreta) y de regresión (variable continua).<p>
+  • <b>Aprendizaje semi-supervisado</b>: Se basa en el uso en el proceso de aprendizaje de un conjunto muy reducido de ejemplos de entrenamiento previamente etiquetados, junto con otro conjunto mucho más grande de ejemplos no etiquetados. Es útil cuando el coste del etiquetado del conjunto de datos es muy alto. Hace uso de un proceso que se retroalimenta a partir de unas semillas mínimas, pero que va creciendo hasta etiquetar toda la información de forma cuasiautomática.<p>
+  • <b>Aprendizaje por refuerzo</b>: Se infieren las decisiones basadas en los éxitos y fracasos de las acciones precedentes. Tomando el aprendizaje supervisado, la etiqueta se refiere a la acción a tomar cuando se está en un estado dado. Al tomar la decisión, se pasa a un siguiente estado. No es supervisado, puesto que no se le provee de la acción óptima a tomar dado un estado dado, pero tampoco es no supervisado, puesto que se tiene feedback de la calidad de la acción tomada.<p>
+Por otro lado, existen otros paradigmas a considerar:<p>
+  • <b>Aprendizaje activo</b>: Es un caso particular del aprendizaje semi-supervisado, donde puede afectar la elección de los ejemplos de aprendizaje, basados en las observaciones precedentes.<p>
+  • <b>Aprendizaje offline vs online</b>: En el aprendizaje offline se opera en sobre un batch de ejemplos de entrenamiento, mientras que, en el online, es de tipo streaming.<p>
+
+  <h1> ¿Cuándo elegir una disciplina u otra? </h1>
+
+<h2> Aprendizaje no supervisado </h2>
+
+<center><img src="https://i.ibb.co/kqr9YgP/algoritmos-no-supervisados.png" alt="algoritmos-no-supervisados" border="0" width="100%" height="100%"></center>
+
+<h3>Datasets sin ruido ni outliers. Algoritmos aconsejables:</h3>
+
+<p>• <b>Clustering borrosos</b>: En los casos donde los datos pueden pertenecer a más de un clúster.<p>
+
+<div style="background-color:	#D3D3D3; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+from __future__ import division, print_function
+import numpy as np
+import matplotlib.pyplot as plt
+import skfuzzy as fuzz
+
+colors = ['b', 'orange', 'g', 'r', 'c', 'm', 'y', 'k', 'Brown', 'ForestGreen']
+
+# Definir los clusters
+centers = [[4, 2],
+         [1, 7],
+         [5, 6]]
+
+# Definir las sigmas de cluster en x e y
+sigmas = [[0.8, 0.3],
+        [0.3, 0.5],
+        [1.1, 0.7]]
+
+# Generar datos de test
+np.random.seed(42)  # Poner seed para reproducirlo
+xpts = np.zeros(1)
+ypts = np.zeros(1)
+labels = np.zeros(1)
+for i, ((xmu, ymu), (xsigma, ysigma)) in enumerate(zip(centers, sigmas)):
+  xpts = np.hstack((xpts, np.random.standard_normal(200) * xsigma + xmu))
+  ypts = np.hstack((ypts, np.random.standard_normal(200) * ysigma + ymu))
+  labels = np.hstack((labels, np.ones(200) * i))
+
+# Visualizar datos de test
+fig0, ax0 = plt.subplots()
+for label in range(3):
+  ax0.plot(xpts[labels == label], ypts[labels == label], '.',
+           color=colors[label])
+ax0.set_title('Datos de test: 200 puntos en 3  clusters.')
+</pre>
+</div>
+<p>
+• <b>Particionantes (k-Means)</b>: Divide los datos en k clústers mutuamente excluyentes. Ajusta grandes datasets, pero el rendimiento decae si hay outliers. <p>
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+from pandas import DataFrame
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+Data = {'x': [25,34,22,27,33,33,31,22,35,34,67,54,57,43,50,57,59,52,65,47,49,48,35,33,44,45,38,43,51,46],
+      'y': [79,51,53,78,59,74,73,57,69,75,51,32,40,47,53,36,35,58,59,50,25,20,14,12,20,5,29,27,8,7]
+     }
+
+df = DataFrame(Data,columns=['x','y'])
+
+kmeans = KMeans(n_clusters=3).fit(df)
+centroidess = kmeans.cluster_centers_
+print(centroidess)
+
+plt.scatter(df['x'], df['y'], c= kmeans.labels_.astype(float), s=50, alpha=0.5)
+plt.scatter(centroidess[:, 0], centroidess[:, 1], c='red', s=50)
+plt.show()
+</pre>
+</div> 
+<p>
+
+<h3>Datasets con ruido pero no escalables. Algoritmos aconsejables:</h3>
+
+
+<b>• ROCKS</b><p>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# https://analyticsindiamag.com/hands-on-guide-to-rock-clustering-algorithm/
+# Se importan las librerías
+from pyclustering.cluster import cluster_visualizer,cluster_visualizer_multidim
+from pyclustering.cluster.rock import rock;
+from pyclustering.utils import read_sample;
+from random import random;
+from pyclustering.samples.definitions import FCPS_SAMPLES
+from pyclustering.utils import read_sample
+
+data = read_sample(FCPS_SAMPLES.SAMPLE_HEPTA)
+# Se crea una instanca del algoritmo ROCK para el análisis del clúster. Se localizan 7 clústers
+rock = rock(data, 1.0, 7)
+
+# Se ejecuta del clúster
+rock.process()
+
+# Se obtienen los resultados
+clusters = rock.get_clusters()
+
+visualizer = cluster_visualizer()
+visualizer.append_clusters(clusters, data)
+visualizer.show();
+</pre>
+</div>
+<p>
+<h3>Datasets con ruido y/o escalables. Algoritmos aconsejables:</h3>
+<p>
+
+Forma del cluster <p>
+
+• Definida: <b>Reducción iterativa balanceada y clústers usando jerarquías (BIRCH)</b>: <p>
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.cluster import Birch
+data, clusters = make_blobs(n_samples = 5000, centers = 12, cluster_std = 0.50, random_state = 0)
+model = Birch(branching_factor = 50, n_clusters = None, threshold = 1.5)
+model.fit(data)
+pred = model.predict(data)
+plt.scatter(data[:, 0], data[:, 1], c = pred)
+</pre>
+</div>
+<p>
+
+
+• Arbitraria: <b>Clustering usando representativos (CURE):</b> Representa una mejora del algoritmo BIRCH <p>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+from pyclustering.cluster import cluster_visualizer;
+from pyclustering.cluster.cure import cure;
+from pyclustering.utils import read_sample;
+from pyclustering.samples.definitions import FCPS_SAMPLES;
+
+# Se importan los datos en el siguiente formato [ [0.1, 0.5], [0.3, 0.1], ... ].
+input_data = read_sample(FCPS_SAMPLES.SAMPLE_LSUN);
+
+# Localizar los 3 clusters
+cure_instance = cure(input_data, 3);
+cure_instance.process();
+clusters = cure_instance.get_clusters();
+
+# Visualizar
+visualizer = cluster_visualizer();
+visualizer.append_clusters(clusters, input_data);
+visualizer.show();
+</pre>
+</div>
+<p>
+
+• <b>"Partición Alrededor de Medoids" (PAM)</b>: Mejora del algortimo k-Means, ya que es más robusto a ruido y/o outliers. <p>
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+from pyclustering.cluster.kmedoids import kmedoids
+from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
+from pyclustering.cluster import cluster_visualizer
+from pyclustering.utils import read_sample
+from pyclustering.samples.definitions import FCPS_SAMPLES
+
+# Cargar la lista de puntos para el análisis
+sample = read_sample(FCPS_SAMPLES.SAMPLE_TWO_DIAMONDS)
+ 
+# Inicializar los medoids usando algoritmo K-Means
+initial_medoids = kmeans_plusplus_initializer(sample, 2).initialize(return_index=True)
+ 
+# Crear una instancia del algoritmo PAM
+kmedoids_instance = kmedoids(sample, initial_medoids)
+ 
+# Ejecutar el cluster
+kmedoids_instance.process()
+clusters = kmedoids_instance.get_clusters()
+medoids = kmedoids_instance.get_medoids()
+ 
+# Imprimir el clúster
+print("Clusters:", clusters)
+ 
+# Visualizar los resultados
+visualizer = cluster_visualizer()
+visualizer.append_clusters(clusters, sample)
+visualizer.append_cluster(initial_medoids, sample, markersize=12, marker='*', color='gray')
+visualizer.append_cluster(medoids, sample, markersize=14, marker='*', color='black')
+visualizer.show()
+</pre>
+</div>
+<p>
+
+• <b>Algoritmos jerárquicos</b>: Proporciona la evaluación de datos sin procesar en forma de matriz. Cada grupo está separado de otros grupos en forma de jerarquía. Cada clúster consta de puntos de datos similares. Se utiliza un modelo probabilístico para medir la distancia entre cada grupo.<p>
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+import scipy.cluster.hierarchy as sch 
+dendrogram = sch.dendrogram(sch.linkage(datos, method = 'ward'))
+plt.title('Dendrograma') 
+plt.xlabel('Clientes')
+plt.ylabel('Distancias euclideas') 
+plt.show()
+</pre>
+</div> 
+<p>
+
+• <b>Mezcla de gaussianas</b>: Es la técnica más popular de los no supervisados. Se conoce como una técnica suave de clustering donde se emplea para calcular la probabilidad de diferentes tipos de datos en clústering. <p> 
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# Se genera un dataset
+#from sklearn.datasets.samples_generator import make_blobs
+from sklearn.datasets import make_blobs
+X, y_true = make_blobs(n_samples=400, centers=3,
+                       cluster_std=0.75, random_state=0)
+X = X[:, ::-1] # flip axes for better plotting
+# Se muestran los datos originales
+plt.scatter(X[:, 0], X[:, 1], c=y_true, s=40, cmap='viridis');
+# 
+from sklearn.mixture import GaussianMixture
+gmm = GaussianMixture(n_components = 3).fit(X)
+labels = gmm.predict(X)
+probs = gmm.predict_proba(X)
+size = 50 * probs.max(1) ** 2  # square emphasizes differences
+plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', s=size, edgecolor='k');
+</pre>
+</div> 
+</p>
+
+<h2> Aprendizaje supervisado </h2>
+
+<center><img src="https://i.ibb.co/4Y3r4Gn/algoritmos-supervisados.png" alt="algoritmos-supervisados" border="0" width="105%" height="105%"></center>
+
+<h3> <p style = "color: red"> Clasificación </p> </h3>
+
+<p>
+<h4>&emsp;&emsp;&emsp;&emsp;&emsp;¿Es escalable?  NO <p>
+&emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido?  NO <p>
+  <h4>&emsp;&emsp;<b>Binarios:</b> Algoritmo recomendado: kNN <p></h4>
+
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# import some data to play with
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+iris = datasets.load_iris()
+
+X = iris.data
+y = iris.target
+
+# 0. load data in DataFrame
+import numpy as np
+import pandas as pd
+df_iris = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
+                     columns= iris['feature_names'] + ['target'])
+
+df_iris.target = df_iris.target.astype(int)
+
+
+df_iris.head()
+df_iris['target'].unique()
+
+
+train, test = train_test_split(df_iris[['petal length (cm)','petal width (cm)', 'target']], test_size=0.33)
+train.reset_index(inplace = True)
+test.reset_index(inplace = True)
+
+from sklearn import neighbors
+from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+cv = KFold(n_splits = 5, shuffle = True) # shuffle = False si hay dimensión temporal 
+
+
+for i, weights in enumerate(['uniform', 'distance']):
+   total_scores = []
+   for n_neighbors in range(1,30):
+       fold_accuracy = []
+       knn = neighbors.KNeighborsClassifier(n_neighbors, weights=weights)
+       for train_fold, test_fold in cv.split(train):
+          # División train test aleatoria
+          f_train = train.loc[train_fold]
+          f_test = train.loc[test_fold]
+          # entrenamiento y ejecución del modelo
+          knn.fit( X = f_train.drop(['target'], axis=1), 
+                               y = f_train['target'])
+          y_pred = knn.predict(X = f_test.drop(['target'], axis = 1))
+          # evaluación del modelo
+          acc = accuracy_score(f_test['target'], y_pred)
+          fold_accuracy.append(acc)
+       total_scores.append(sum(fold_accuracy)/len(fold_accuracy))
+   
+   plt.plot(range(1,len(total_scores)+1), total_scores, 
+             marker='o', label=weights)
+   print ('Max Value ' +  weights + " : " +  str(max(total_scores)) +" (" + str(np.argmax(total_scores) + 1) + ")")
+   plt.ylabel('Acc')      
+    
+
+plt.legend()
+plt.show() 
+
+# constructor
+n_neighbors = 27
+weights = 'uniform'
+knn = neighbors.KNeighborsClassifier(n_neighbors= n_neighbors, weights=weights) 
+# fit and predict
+knn.fit(X = train[['petal length (cm)','petal width (cm)']], y = train['target'])
+y_pred = knn.predict(X = test[['petal length (cm)','petal width (cm)']])
+acc = accuracy_score(test['target'], y_pred)
+print ('Acc', acc)
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
+cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
+h = .05  # step size in the mesh
+
+
+X = train[['petal length (cm)','petal width (cm)']].values
+y = train['target'].values
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                       np.arange(y_min, y_max, h))
+Z = knn.predict(np.c_[xx.ravel(), yy.ravel()])
+
+# Put the result into a color plot
+Z = Z.reshape(xx.shape)
+plt.figure()
+plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
+
+# Plot also the training points
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold,
+             edgecolor='k', s=20)
+plt.xlim(xx.min(), xx.max())
+plt.ylim(yy.min(), yy.max())
+plt.title("Classification (k = %i, weights = '%s')"
+              % (n_neighbors, weights))
+
+plt.show()
+
+</pre>
+</div> 
+<p>
+
+
+<p>
+
+
+<p>
+<h4>&emsp;&emsp;&emsp;&emsp;&emsp;¿Es escalable?  NO <p>
+&emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido?  SI <p>
+<p>
+
+  <h4>&emsp;&emsp;<b>Binarios:</b> Algoritmo recomendado: Árboles de decisión <p></h4>
+
+  <div style="background-color:	#D3D3D3; padding: 10px; border: 1px solid green;"> 
+  <pre class="code">
+  # CLASIFICACION: Predecir una clase nominal
+  # Importación de librerías
+  
+  import matplotlib
+  from sklearn import tree
+  import graphviz
+  from urllib.request import urlretrieve
+  import pandas as pd
+  import numpy as np
+  
+  # importar algoritmos de clasificacion
+  from sklearn.tree import DecisionTreeClassifier
+    
+  iris = 'http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
+    
+  df = pd.read_csv(iris, header=None, sep=',')
+    
+  # Se ponen los nombres de las columnas
+    
+  attributes = ["sepal_length","sepal_width","petal_length","petal_width","class"]
+  df.columns = attributes
+    
+  # Como hay strings, se crea una nueva columna con los valores numéricos
+  df_mod = df.copy()
+  targets = df_mod["class"].unique()
+  map_to_int = {name: n for n, name in enumerate(targets)}
+  df_mod["target"] = df_mod["class"].replace(map_to_int)
+  
+  # target --> Valores a predecir
+  y = df_mod["target"]
+  X = df_mod[features]
+  # Aqui se indica el modelo a utilizar. En este caso, DecisionTreeClassifier
+  dt = DecisionTreeClassifier(min_samples_split=20, random_state=99)
+  dt.fit(X,y)
+  
+  dot_data = tree.export_graphviz(dt, out_file=None, feature_names=features, class_names=targets, filled=True, special_characters=True)
+  graph
+  </pre>
+  </div>   
+
+  <h4> &emsp;&emsp;&emsp;¿Es escalable? SI <p>
+  &emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido? NO <p>
+  &emsp;&emsp;&emsp;&emsp;&emsp;Tipo de respuesta: Binaria - Discreta </h4><p>
+  <h4>&emsp;&emsp;</b> Algoritmo recomendado: Clasificación SVM <p></h4>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.svm import SVC # "Support vector classifier"
+from scipy import stats
+
+# use seaborn plotting defaults
+import seaborn as sns; sns.set()
+from sklearn.datasets import make_blobs
+X, y = make_blobs(n_samples=50, centers=2,
+                  random_state=0, cluster_std=0.60)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn');
+xfit = np.linspace(-1, 3.5)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn')
+plt.plot([0.6], [2.1], 'x', color='red', markeredgewidth=2, markersize=10)
+
+for m, b, c in [(1, 0.65, 'r'), (0.5, 1.6, 'g'), (-0.2, 2.9, 'b')]:
+    plt.plot(xfit, m * xfit + b, f'-{c}')
+
+plt.xlim(-1, 3.5);
+
+X, y = make_blobs(n_samples=50, centers=2,
+                  random_state=0, cluster_std=0.60)
+
+model = SVC(kernel='linear', C=1E10)
+model.fit(X, y)
+# Se visualiza
+
+def plot_svc_decision_function(model, ax=None, plot_support=True):
+    """Plot the decision function for a 2D SVC"""
+    if ax is None:
+        ax = plt.gca()
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    
+    # create grid to evaluate model
+    x = np.linspace(xlim[0], xlim[1], 30)
+    y = np.linspace(ylim[0], ylim[1], 30)
+    Y, X = np.meshgrid(y, x)
+    xy = np.vstack([X.ravel(), Y.ravel()]).T
+    P = model.decision_function(xy).reshape(X.shape)
+    
+    # plot decision boundary and margins
+    ax.contour(X, Y, P, colors='k',
+               levels=[-1, 0, 1], alpha=0.5,
+               linestyles=['--', '-', '--'])
+    
+    # plot support vectors
+    if plot_support:
+        ax.scatter(model.support_vectors_[:, 0],
+                   model.support_vectors_[:, 1],
+                   s=300, linewidth=1, facecolors='none');
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn')
+plot_svc_decision_function(model);
+</pre>
+</div>
+  <h4> &emsp;&emsp;&emsp;¿Es escalable? SI <p>
+  &emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido? NO<p>
+  &emsp;&emsp;&emsp;&emsp;&emsp;Tipo de respuesta: Binaria - Discreta - Categórica </h4><p>
+  <h4>&emsp;&emsp;</b> Algoritmo recomendado: Redes neuronales<p></h4>
+ 
+  <div style="background-color:	#D3D3D3; padding: 10px; border: 1px solid green;"> 
+  <pre class="code"> 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.preprocessing import Normalizer
+from keras.layers import Activation, Dense, Dropout, BatchNormalization, Input
+from keras.models import Model
+from keras.optimizers import Adam
+from keras.callbacks import ReduceLROnPlateau, EarlyStopping
+df = pd.read_csv('diabetes.csv')
+df['Glucose'] = df['Glucose'].replace(0, df['Glucose'].mean()) # Se corrigen missing values
+df['BloodPressure'] = df['BloodPressure'].replace(0, df['BloodPressure'].mean()) #  Se corrigen missing values en BMI
+df['BMI'] = df['BMI'].replace(0, df['BMI'].median())# Corrección missing values en  Insulin y SkinThickness
+
+X = df.drop('Outcome', axis =1).values
+y = df.Outcome.values
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=2)
+nl = Normalizer()
+nl.fit(X_train)
+X_train = nl.transform(X_train)
+X_dev, X_test, y_dev, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=2)
+X_dev = nl.transform(X_dev)
+X_test = nl.transform(X_test)
+
+df['SkinThickness'] = df['SkinThickness'].replace(0, df['SkinThickness'].median())
+df['Insulin'] = df['Insulin'].replace(0, df['Insulin'].median())
+# Se define el modelo
+def nn():
+    inputs = Input(name='inputs', shape=[X_train.shape[1],])
+    layer = Dense(128, name='FC1')(inputs)
+    layer = BatchNormalization(name='BC1')(layer)
+    layer = Activation('relu', name='Activation1')(layer)
+    layer = Dropout(0.3, name='Dropout1')(layer)
+    layer = Dense(128, name='FC2')(layer)
+    layer = BatchNormalization(name='BC2')(layer)
+    layer = Activation('relu', name='Activation2')(layer)
+    layer = Dropout(0.3, name='Dropout2')(layer)
+    layer = Dense(128, name='FC3')(layer)
+    layer = BatchNormalization(name='BC3')(layer)
+    layer = Dropout(0.3, name='Dropout3')(layer)
+    layer = Dense(1, name='OutLayer')(layer)
+    layer = Activation('sigmoid', name='sigmoid')(layer)
+    model = Model(inputs=inputs, outputs=layer)
+    return model
+# Se compila y ajusta
+model = nn()
+model.summary()
+model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+reduce_lr = ReduceLROnPlateau()
+early_stopping = EarlyStopping(patience=20, min_delta=0.0001)
+model.fit(x=X_train, y=y_train, epochs=200, validation_data=(X_dev, y_dev), callbacks=[reduce_lr, early_stopping], verbose=0)
+
+	</pre>
+	</div> 
+
+
+  <h4> &emsp;&emsp;&emsp;¿Es escalable? SI <p>
+  &emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido? SI </h4><p>
+  <h4>&emsp;&emsp;<b>Respuesta binaria. Algoritmo recomendado: Regresión logística (Logit)</b> <p></h4>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+# Carga de datos
+df = pd.read_csv('train_titanic.csv')
+y = df['Survived']
+
+X = df.drop('Survived', axis = 1)
+X = X.drop(['Name', 'Ticket', 'Cabin', 'Embarked'], axis = 1)
+
+X = X.replace(['male', 'female'], [2, 3])
+
+X.fillna(method ='ffill', inplace = True)
+X_train, X_test, y_train, y_test = train_test_split(
+          X, y, test_size = 0.3, random_state = 0)
+
+lr = LogisticRegression()
+lr.fit(X_train, y_train)
+print(lr.score(X_test, y_test))
+</pre>
+</div>
+
+ <h4>&emsp;&emsp;<b>Respuesta probabilística. Algoritmo recomendado: Naïve Bayes</b> <p></h4>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+import numpy as np
+from sklearn.datasets import make_moons, make_circles, make_classification
+from matplotlib import pyplot as plt
+# make_classification: Generate a random n-class classification problem.
+X, y = make_classification(n_features=2, n_redundant=0, n_informative=2,
+                           n_classes  = 2, random_state=1, n_clusters_per_class=1)
+rng = np.random.RandomState(2)
+X += 2 * rng.uniform(size=X.shape)
+plt.plot(X[:, 0], X[:,1], 'r.')
+from matplotlib.colors import ListedColormap
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB, ComplementNB
+
+
+# plotting variables
+h = .02  # step size in the mesh
+i = 1
+figure = plt.figure(figsize=(10, 4))
+
+# classifiers
+names = ["GaussianNB", "MultiNomialNB", 'BernouilliNB', 'ComplementNB']
+classifiers = [GaussianNB(), MultinomialNB(), BernoulliNB(), ComplementNB()]
+
+# scale
+X = MinMaxScaler().fit_transform(X)
+# train and test
+X_train, X_test, y_train, y_test = \
+        train_test_split(X, y, test_size=.4, random_state=42)
+
+
+# prepare visualization
+x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
+y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+
+# just plot the dataset first
+cm = plt.cm.RdBu
+cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+ax = plt.subplot(1, len(classifiers) + 1, i)
+ax.set_title("Input data")
+# Plot the training points
+ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm_bright,
+         edgecolors='k')
+# Plot the testing points
+ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm_bright, alpha=0.6,
+              edgecolors='k')
+ax.set_xlim(xx.min(), xx.max())
+ax.set_ylim(yy.min(), yy.max())
+ax.set_xticks(())
+ax.set_yticks(())
+i += 1
+
+for name, clf in zip(names, classifiers):
+  ax = plt.subplot(1, len(classifiers) + 1, i)
+  
+  # FIT THE MODEL
+  clf.fit(X_train, y_train)
+  # PREDIT AND SCORE  
+  score = clf.score(X_test, y_test) #Returns the mean accuracy on the given test data and labels.
+  
+  
+  # Plot the decision boundary. For that, we will assign a color to each
+  # point in the mesh [x_min, x_max]x[y_min, y_max].
+  Z = clf.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
+
+  # Put the result into a color plot
+  Z = Z.reshape(xx.shape)
+  ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
+
+  # Plot the training points
+  ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm_bright,
+             edgecolors='k')
+  # Plot the testing points
+  ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm_bright,
+             edgecolors='k', alpha=0.6)
+
+  ax.set_xlim(xx.min(), xx.max())
+  ax.set_ylim(yy.min(), yy.max())
+  ax.set_xticks(())
+  ax.set_yticks(())
+  ax.set_title(name)
+  ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'),
+          size=15, horizontalalignment='right')
+  i += 1
+  
+plt.tight_layout()
+plt.show()
+# Construccion del modelo
+clf = GaussianNB() 
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+acc = accuracy_score(y_test, y_pred)
+print ('Acc', acc)
+# Visualizacion de matriz de confusion
+from sklearn.metrics import confusion_matrix
+from sklearn.utils.multiclass import unique_labels
+
+def plot_confusion_matrix(y_true, y_pred, classes,
+                          normalize=False,
+                          title=None,
+                          cmap=plt.cm.Blues):
+    if not title:
+        if normalize:
+            title = 'Matriz de confusión normalizada'
+        else:
+            title = 'Matriz de confusión sin normalizar'
+
+    # Calculo matriz de confusion
+    cm = confusion_matrix(y_true, y_pred)
+    classes = classes[unique_labels(y_true, y_pred)]
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Matriz de confusión normalizada")
+    else:
+        print("Matriz de confusión sin normalizar")
+
+    print(cm)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+    return ax
+
+plot_confusion_matrix(y_test, y_pred , classes = unique_labels(y_test, y_pred), normalize=True,
+                      title='Matriz de confusion normalizada')	
+</pre>
+</div>
+
+<h4>&emsp;&emsp;<b>Respuesta categórica. Algoritmo recomendado: Logit Multinomial</b> <p></h4>
+  <div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+  <pre class="code">
+  from  sklearn import  datasets
+  iris=datasets.load_iris()
+  x=iris.data
+  y=iris.target
+  from sklearn.model_selection import train_test_split
+  x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=.5)
+  
+  logR_mul = LogisticRegression(multi_class='multinomial')
+  # Ajuste del modelo
+  logR_mul.fit(x,y)
+  # Puntuación
+  print("Puntuación con logit multinominal:",logR_mul.score(x,y))
+  </pre>
+  </div>    
+
+<h3> <p style = "color: red"> Regresión </p> </h3>
+
+<h3> ¿Tipos de datos? </h3> 
+
+<h4> <b>&emsp;Discreto - Categórico - Continuo:</b> <p> </h4>
+
+<h4>&emsp;&emsp;&emsp;&emsp;&emsp;¿Es escalable?  NO <p>
+&emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido?  SI <p>
+<p>
+Árboles de regresión</h4> <p>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# Se genera el dataset
+rng = np.random.RandomState(1)
+X = np.linspace(0, 5, 120)[:, np.newaxis]
+y = np.sin(X).ravel() + np.sin(6*X).ravel() + rng.normal(0, 0.1, X.shape[0])
+# Se importan las librerias
+from sklearn.tree import DecisionTreeRegressor
+regresion = DecisionTreeRegressor(max_depth = 4)
+regresion.fit(X,y)
+y_1 = regresion.predict(X)
+from sklearn.tree import plot_tree
+plt.figure()
+plt.scatter(X,y, c="k", label="Ejemplo de entrenamiento")
+plt.plot(X, y_1, c="g", label="estimador", linewidth=2)
+plt.xlabel("datos")
+plt.ylabel("objetivos")
+plt.title("Regresión de árboles de decisión")
+plt.legend()
+plt.show()
+</pre>
+</div>
+
+<p>
+<h4>&emsp;&emsp;&emsp;&emsp;&emsp;¿Es escalable?  NO <p>
+&emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido?  NO <p>
+<p>
+kNN regresión </h4> <p>
+<p>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# Carga del archivo
+bikes = pd.read_csv('bikes.csv', index_col = 'date')
+# Correlacion de cada una de las características y de la variable a predecir
+import seaborn as sns
+sns.set()
+sns.heatmap(bikes.corr(), square=True, annot=True)
+# Se dividen datos en entrenamiento y test
+df = bikes[['temperature', 'humidity', 'count']]
+train = df.loc['2011-01-01':'2012-06-30']
+test  = df.loc['2012-07-01':]
+from sklearn import neighbors
+from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error
+import numpy as np
+
+cv = KFold(n_splits = 10, shuffle = False) #
+# se podría utilizar https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html 
+
+
+for i, weights in enumerate(['uniform', 'distance']):
+ total_scores = []
+ for n_neighbors in range(1,30):
+     fold_accuracy = []
+     knn = neighbors.KNeighborsRegressor(n_neighbors, weights=weights)
+     # verificar cada uno de los modelos con validación cruzada.
+     for train_fold, test_fold in cv.split(train):
+        # División train test aleatoria
+        f_train = train.loc[train_fold]
+        f_test = train.loc[test_fold]
+        # entrenamiento y ejecución del modelo
+        knn.fit( X = f_train.drop(['count'], axis=1), 
+                             y = f_train['count'])
+        y_pred = knn.predict(X = f_test.drop(['count'], axis = 1))
+        # evaluación del modelo
+        mae = mean_absolute_error(f_test['count'], y_pred)
+        fold_accuracy.append(mae)
+     total_scores.append(sum(fold_accuracy)/len(fold_accuracy))
+ 
+ plt.plot(range(1,len(total_scores)+1), total_scores, 
+           marker='o', label=weights)
+ print ('Min Value ' +  weights + " : " +  str(min(total_scores)) +" (" + str(np.argmin(total_scores) + 1) + ")")
+ plt.ylabel('MAE')      
+  
+
+plt.legend()
+plt.show() 
+</pre>
+</div>
+<p>
+<h4>&emsp;&emsp;&emsp;&emsp;&emsp;¿Es escalable?  SI <p>
+&emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido?  NO <p>
+<p>
+<p>
+Regresión SVM </h4> <p>
+<div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
+<pre class="code">
+# Código original: https://medium.com/geekculture/position-salary-support-vector-regression-svr-db9f1deba4b0
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+data = pd.read_csv('Position_Salaries.csv')
+data.head()
+
+x = data.iloc[:, 1:-1].values
+y = data.iloc[:, -1].values
+y = y.reshape(len(y),1)
+
+from sklearn.preprocessing import StandardScaler
+sc_x = StandardScaler()
+sc_y = StandardScaler()
+x = sc_x.fit_transform(x)
+y = sc_y.fit_transform(y)
+
+from sklearn.svm import SVR
+regressor = SVR(kernel = 'rbf')
+regressor.fit(x, y)
+
+regressor.predict(sc_x.transform([[6.5]]))
+
+sc_y.inverse_transform(regressor.predict(sc_x.transform([[6.5]])))
+
+plt.scatter(sc_x.inverse_transform(x), sc_y.inverse_transform(y), color = 'red')
+plt.plot(sc_x.inverse_transform(x), sc_y.inverse_transform(regressor.predict(x)), color = 'blue')
+plt.xlabel('Position level')
+plt.ylabel('Salary')
+plt.show()
+</pre>
+</div>
+<p>
+
+<h2> Glosario </h2>
+<b>Escalabilidad</b>: Mide el crecimiento de complejidad temporal en relación con el tamaño del problema (capacidad del algoritmo de manejar gran volúmenm de datos)
+<b>Outlier</b>: Observación anormal y extrema en una muestra estadística o serie temporal.<p>
+<b>Ruido</b>: Errores en los datos al ser introducidos, que pueden ser debidos a factores humanos o imprecisión de los instrumentos.<p>
+
+</BODY>
+
+</HTML>
