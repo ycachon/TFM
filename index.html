@@ -9,7 +9,7 @@ body {
 <BODY>
 
 <div style="text-align: justify; margin-left:20%; margin-right:20%; background-color: #cdf">
-  <h2> <center> Disciplinas de Machine Learning  </center> <p> <p> <p> </h2>
+  <h1> <center> Disciplinas de Machine Learning  </center> <p> <p> <p> </h1>
 
   Dentro de Machine Learning se distinguen las siguientes disciplinas: <p>
   • <b>Aprendizaje no supervisado</b>: Consta de un conjunto de datos que no están previamente etiquetados. El objetivo de este aprendizaje es que el sistema aprenda las propiedades del mecanismo que genera el dataset. Entre tareas específicas se distinguen clustering, reducción de dimensionalidad, extracción de características y generación de modelos, en donde el sistema aprende al generar modelos que produzcan ejemplos artificiales similares a los disponibles en el dataset. <p>
@@ -24,7 +24,7 @@ Por otro lado, existen otros paradigmas a considerar:<p>
 
 <h2> Aprendizaje no supervisado </h2>
 
-<center><img src="https://i.ibb.co/kqr9YgP/algoritmos-no-supervisados.png" alt="algoritmos-no-supervisados" border="0" width="100%" height="100%"></center>
+<center><img src="https://i.ibb.co/kqr9YgP/algoritmos-no-supervisados.png" alt="algoritmos-no-supervisados" border="0" width="80%" height="80%"></center>
 
 <h3>Datasets sin ruido ni outliers. Algoritmos aconsejables:</h3>
 
@@ -67,6 +67,9 @@ for label in range(3):
 ax0.set_title('Datos de test: 200 puntos en 3  clusters.')
 </pre>
 </div>
+
+<img src="https://i.ibb.co/bBVzhct/Clust-Borrosos.png" alt="Clust-Borrosos" border="0">
+
 <p>
 • <b>Particionantes (k-Means)</b>: Divide los datos en k clústers mutuamente excluyentes. Ajusta grandes datasets, pero el rendimiento decae si hay outliers. <p>
 
@@ -91,6 +94,9 @@ plt.scatter(centroidess[:, 0], centroidess[:, 1], c='red', s=50)
 plt.show()
 </pre>
 </div> 
+
+<img src="https://i.ibb.co/cQwW91y/k-Means.png" alt="k-Means" border="0">
+
 <p>
 
 <h3>Datasets con ruido pero no escalables. Algoritmos aconsejables:</h3>
@@ -123,6 +129,9 @@ visualizer.append_clusters(clusters, data)
 visualizer.show();
 </pre>
 </div>
+
+<img src="https://i.ibb.co/1s13Zw5/ROCKS.png" alt="ROCKS" border="0">
+
 <p>
 <h3>Datasets con ruido y/o escalables. Algoritmos aconsejables:</h3>
 <p>
@@ -145,8 +154,9 @@ plt.scatter(data[:, 0], data[:, 1], c = pred)
 </div>
 <p>
 
+<img src="https://i.ibb.co/m4KCydK/BIRCH.png" alt="BIRCH" border="0">
 
-• Arbitraria: <b>Clustering usando representativos (CURE):</b> Representa una mejora del algoritmo BIRCH <p>
+<p>• Arbitraria: <b>Clustering usando representativos (CURE):</b> Representa una mejora del algoritmo BIRCH <p>
 <div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
 <pre class="code">
 from pyclustering.cluster import cluster_visualizer;
@@ -170,7 +180,9 @@ visualizer.show();
 </div>
 <p>
 
-• <b>"Partición Alrededor de Medoids" (PAM)</b>: Mejora del algortimo k-Means, ya que es más robusto a ruido y/o outliers. <p>
+<img src="https://i.ibb.co/VQfgC2L/CURE.png" alt="CURE" border="0">
+
+<p>• <b>"Partición Alrededor de Medoids" (PAM)</b>: Mejora del algortimo k-Means, ya que es más robusto a ruido y/o outliers. <p>
 
 <div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
 <pre class="code">
@@ -207,7 +219,9 @@ visualizer.show()
 </div>
 <p>
 
-• <b>Algoritmos jerárquicos</b>: Proporciona la evaluación de datos sin procesar en forma de matriz. Cada grupo está separado de otros grupos en forma de jerarquía. Cada clúster consta de puntos de datos similares. Se utiliza un modelo probabilístico para medir la distancia entre cada grupo.<p>
+<img src="https://i.ibb.co/pxCD6TH/PAM.png" alt="PAM" border="0">
+
+<p>• <b>Algoritmos jerárquicos</b>: Proporciona la evaluación de datos sin procesar en forma de matriz. Cada grupo está separado de otros grupos en forma de jerarquía. Cada clúster consta de puntos de datos similares. Se utiliza un modelo probabilístico para medir la distancia entre cada grupo.<p>
 
 <div style="background-color:	#D3D3D3; ; padding: 10px; border: 1px solid green;"> 
 <pre class="code">
@@ -220,6 +234,8 @@ plt.show()
 </pre>
 </div> 
 <p>
+
+<img src="https://i.ibb.co/D1zF6Qq/jerarquicos.png" alt="jerarquicos" border="0"> <p>
 
 • <b>Mezcla de gaussianas</b>: Es la técnica más popular de los no supervisados. Se conoce como una técnica suave de clustering donde se emplea para calcular la probabilidad de diferentes tipos de datos en clústering. <p> 
 
@@ -243,6 +259,8 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', s=size, edgecolor='k');
 </pre>
 </div> 
 </p>
+
+<img src="https://i.ibb.co/N6kcgHx/mezcla-gaussianas.png" alt="mezcla-gaussianas" border="0"> <p>
 
 <h2> Aprendizaje supervisado </h2>
 
@@ -396,7 +414,9 @@ plt.show()
     
   attributes = ["sepal_length","sepal_width","petal_length","petal_width","class"]
   df.columns = attributes
-    
+  
+  features = list(df.columns[:4])
+  
   # Como hay strings, se crea una nueva columna con los valores numéricos
   df_mod = df.copy()
   targets = df_mod["class"].unique()
@@ -411,9 +431,12 @@ plt.show()
   dt.fit(X,y)
   
   dot_data = tree.export_graphviz(dt, out_file=None, feature_names=features, class_names=targets, filled=True, special_characters=True)
-  graph
+  graph = graphviz.Source(dot_data)
+  graph 
   </pre>
   </div>   
+
+<img src="https://i.ibb.co/Yf8mQ2M/Arboles-decision.png" alt="Arboles-decision" border="0">
 
   <h4> &emsp;&emsp;&emsp;¿Es escalable? SI <p>
   &emsp;&emsp;&emsp;&emsp;&emsp;¿Robusto al ruido? NO <p>
